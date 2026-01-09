@@ -1,0 +1,274 @@
+# GitHub认证配置
+
+本配置文件提供了GitHub认证的示例配置，包括：
+1. GitHub Personal Access Token (PAT) 认证
+2. GitHub Actions OIDC 认证
+
+## 配置示例
+
+### 基础配置（GitHub PAT认证）
+
+```yaml
+version: 0.1
+log:
+  level: debug
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+http:
+  addr: :5000
+auth:
+  github:
+    realm: Registry Realm
+    # 可选：用于GitHub Enterprise
+    # api_url: https://github.example.com/api/v3
+```
+
+### 限制组织访问
+
+```yaml
+auth:
+  github:
+    realm: Registry Realm
+    allowed_orgs:
+      - my-organization
+      - another-org
+```
+
+### 限制仓库访问
+
+```yaml
+auth:
+  github:
+    realm: Registry Realm
+    allowed_repos:
+      - owner/repo1
+      - owner/repo2
+```
+
+### 启用 GitHub Actions OIDC 支持
+
+```yaml
+auth:
+  github:
+    realm: Registry Realm
+    enable_oidc: true
+    oidc_audience: https://registry.example.com
+    # 可选：同时限制特定仓库
+    allowed_repos:
+      - owner/allowed-repo
+```
+
+### 完整配置示例
+
+```yaml
+version: 0.1
+log:
+  level: info
+  fields:
+    service: registry
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+  delete:
+    enabled: true
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+  tls:
+    certificate: /path/to/cert.pem
+    key: /path/to/key.pem
+auth:
+  github:
+    realm: "Docker Registry"
+    # GitHub API URL（用于 GitHub Enterprise）
+    api_url: https://api.github.com
+    # 启用 OIDC 支持
+    enable_oidc: true
+    # OIDC audience（应与 GitHub Actions 配置匹配）
+    oidc_audience: https://registry.example.com
+    # 限制访问的组织
+    allowed_orgs:
+      - my-org
+    # 限制访问的仓库（格式：owner/repo）
+    allowed_repos:
+      - my-org/app1
+      - my-org/app2
+```
+
+## 使用说明
+
+### 1. GitHub Personal Access Token (PAT) 认证
+
+使用 GitHub PAT 进行认证：
+
+```bash
+# 使用 token 前缀
+echo $GITHUB_TOKEN | docker login registry.example.com -u username --password-stdin
+
+# 使用 Bearer token
+curl -H "Authorization: Bearer $GITHUB_TOKEN" https://registry.example.com/v2/
+```
+
+生成 GitHub PAT：
+1. 访问 GitHub Settings > Developer settings > Personal access tokens
+2. 点击 "Generate new token"
+3. 选择所需权限（至少需要 `read:user`）
+4. 复制生成的 token
+
+### 2. GitHub Actions OIDC 认证
+
+在 GitHub Actions workflow 中使用 OIDC token：
+
+```yaml
+name: Build and Push
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # 需要此权限来获取 OIDC token
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Get OIDC Token
+        id: oidc
+        run: |
+          # 从 GitHub Actions 获取 OIDC token
+          OIDC_TOKEN=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://registry.example.com" | jq -r .value)
+          echo "::add-mask::$OIDC_TOKEN"
+          echo "token=$OIDC_TOKEN" >> $GITHUB_OUTPUT
+      
+      - name: Login to Registry
+        run: |
+          echo "${{ steps.oidc.outputs.token }}" | \
+            docker login registry.example.com -u github-actions --password-stdin
+      
+      - name: Build and Push
+        run: |
+          docker build -t registry.example.com/myimage:latest .
+          docker push registry.example.com/myimage:latest
+```
+
+更简单的方式（使用自定义 action）：
+
+```yaml
+name: Build and Push
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Login to Registry with OIDC
+        run: |
+          # 使用环境变量中的 OIDC token
+          curl -u "github-actions:$ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            -H "Authorization: Bearer $(curl -s -H \"Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN\" \"$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://registry.example.com\" | jq -r .value)" \
+            https://registry.example.com/v2/
+```
+
+### 3. 组织成员验证
+
+如果配置了 `allowed_orgs`，认证过程会验证用户是否为指定组织的成员。这需要 PAT 具有 `read:org` 权限。
+
+### 4. 仓库访问限制
+
+如果配置了 `allowed_repos`，只有来自这些仓库的 GitHub Actions OIDC token 才能通过认证。
+
+## OIDC Token 格式
+
+GitHub Actions OIDC token 包含以下声明（claims）：
+
+```json
+{
+  "sub": "repo:owner/repo:ref:refs/heads/main",
+  "aud": "https://registry.example.com",
+  "repository": "owner/repo",
+  "actor": "username",
+  "workflow": "CI",
+  "ref": "refs/heads/main",
+  "sha": "commit-sha",
+  "exp": 1234567890,
+  "iat": 1234567800
+}
+```
+
+配置中的 `oidc_audience` 必须与 token 中的 `aud` 匹配。
+
+## 安全建议
+
+1. **使用 HTTPS**: 始终在生产环境中使用 TLS/HTTPS
+2. **限制访问**: 使用 `allowed_orgs` 或 `allowed_repos` 限制访问权限
+3. **最小权限原则**: PAT 应只授予必要的权限
+4. **Token 轮换**: 定期轮换 GitHub PAT
+5. **监控日志**: 启用审计日志监控可疑活动
+
+## 故障排查
+
+### 认证失败
+
+检查日志中的错误信息：
+
+```bash
+docker logs registry-container 2>&1 | grep -i github
+```
+
+常见问题：
+
+1. **Token 无效**: 确认 GitHub PAT 仍然有效且具有正确权限
+2. **组织成员验证失败**: 确认 PAT 具有 `read:org` 权限
+3. **OIDC audience 不匹配**: 确认配置中的 `oidc_audience` 与 GitHub Actions 请求的一致
+4. **Token 过期**: OIDC token 默认有效期为 10 分钟
+
+### 测试认证
+
+使用 curl 测试：
+
+```bash
+# 测试 PAT 认证
+curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+  https://registry.example.com/v2/
+
+# 测试 OIDC 认证
+curl -H "Authorization: Bearer $OIDC_TOKEN" \
+  https://registry.example.com/v2/
+```
+
+成功的响应应返回 200 状态码。
+
+## GitHub Enterprise 支持
+
+对于 GitHub Enterprise 实例，设置 `api_url`：
+
+```yaml
+auth:
+  github:
+    realm: Registry Realm
+    api_url: https://github.example.com/api/v3
+```
+
+## 参考资料
+
+- [GitHub Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+- [GitHub Actions OIDC](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
+- [Docker Registry Authentication](https://docs.docker.com/registry/configuration/#auth)

@@ -1,0 +1,139 @@
+name: Build and Push to Registry with GitHub Auth
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # 必需：允许获取 OIDC token
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Get GitHub OIDC Token
+        id: get-oidc-token
+        run: |
+          # 从 GitHub Actions 获取 OIDC token
+          # audience 必须与 registry 配置中的 oidc_audience 匹配
+          OIDC_TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://registry.example.com" | jq -r .value)
+          
+          if [ -z "$OIDC_TOKEN" ] || [ "$OIDC_TOKEN" = "null" ]; then
+            echo "Failed to get OIDC token"
+            exit 1
+          fi
+          
+          # 隐藏 token（不在日志中显示）
+          echo "::add-mask::$OIDC_TOKEN"
+          echo "token=$OIDC_TOKEN" >> $GITHUB_OUTPUT
+      
+      - name: Login to Registry with OIDC
+        run: |
+          echo "${{ steps.get-oidc-token.outputs.token }}" | \
+            docker login registry.example.com \
+            -u github-actions \
+            --password-stdin
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t registry.example.com/${{ github.repository }}:${{ github.sha }} \
+            -t registry.example.com/${{ github.repository }}:latest \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push registry.example.com/${{ github.repository }}:${{ github.sha }}
+          docker push registry.example.com/${{ github.repository }}:latest
+      
+      - name: Logout from Registry
+        if: always()
+        run: docker logout registry.example.com
+
+  # 使用 GitHub PAT 的替代方法（用于开发/测试）
+  build-with-pat:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Registry with PAT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GITHUB_TOKEN" | \
+            docker login registry.example.com \
+            -u ${{ github.actor }} \
+            --password-stdin
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t registry.example.com/${{ github.repository }}:pr-${{ github.event.pull_request.number }} \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push registry.example.com/${{ github.repository }}:pr-${{ github.event.pull_request.number }}
+
+  # 多平台构建示例
+  multi-platform-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    strategy:
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Get GitHub OIDC Token
+        id: get-oidc-token
+        run: |
+          OIDC_TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://registry.example.com" | jq -r .value)
+          echo "::add-mask::$OIDC_TOKEN"
+          echo "token=$OIDC_TOKEN" >> $GITHUB_OUTPUT
+      
+      - name: Login to Registry
+        run: |
+          echo "${{ steps.get-oidc-token.outputs.token }}" | \
+            docker login registry.example.com -u github-actions --password-stdin
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: |
+            registry.example.com/${{ github.repository }}:${{ github.sha }}-${{ matrix.platform }}
+          cache-from: type=registry,ref=registry.example.com/${{ github.repository }}:buildcache-${{ matrix.platform }}
+          cache-to: type=registry,ref=registry.example.com/${{ github.repository }}:buildcache-${{ matrix.platform }},mode=max
