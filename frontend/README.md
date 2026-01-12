@@ -17,6 +17,7 @@ npm run build   # Production build
 - **TypeScript** - Type safety
 - **shadcn/ui** - UI components
 - **Tailwind CSS** - Styling
+- **Playwright** - E2E testing
 
 ## Structure
 
@@ -29,6 +30,9 @@ app/
 components/
 ├── navigation.tsx        # Navigation
 └── ui/                   # shadcn/ui components
+
+e2e/
+└── *.spec.ts            # E2E tests
 ```
 
 ## API Endpoints
@@ -37,6 +41,18 @@ components/
 - `/api/v1/repositories` - Repository list
 - `/api/v1/config` - Configuration
 - `/api/v1/health` - Health check
+
+## Testing
+
+Run E2E tests with Playwright:
+
+```bash
+npm run test:e2e        # Run all tests
+npm run test:e2e:ui     # Run with UI
+npm run test:e2e:debug  # Debug mode
+```
+
+See `e2e/README.md` for detailed testing documentation.
 
 ## Building
 
