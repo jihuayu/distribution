@@ -4,12 +4,14 @@ This document describes the new web-based management interface for the Distribut
 
 ## Overview
 
-The web management interface provides a modern dashboard for managing and monitoring your container registry. It includes:
+The web management interface provides a modern **React-based** dashboard for managing and monitoring your container registry. It includes:
 
 - **Dashboard**: View registry status, version, and statistics
 - **Repository Management**: List and view repositories
 - **API Endpoints**: RESTful API for programmatic access
 - **Configuration Viewing**: View (sanitized) registry configuration
+- **React Frontend**: Modern, component-based UI with React Router
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
 ## Configuration
 
@@ -129,16 +131,18 @@ Response:
 The web management interface is built with:
 
 - **Backend**: Go handlers integrated into the registry application
-- **Frontend**: Lightweight HTML/JavaScript dashboard (embedded)
+- **Frontend**: React 18 with React Router for client-side routing
 - **API**: RESTful endpoints at `/api/v1/*`
+- **Build Tool**: Vite for fast development and optimized production builds
 - **Integration**: Seamlessly integrated with existing v2 API
 
 ### URL Routing
 
-- `/` - Web dashboard (HTML interface)
+- `/` - React dashboard (SPA)
+- `/repositories` - Repository browser
+- `/settings` - Configuration viewer
 - `/api/v1/*` - Web management API endpoints
 - `/v2/*` - Docker Registry v2 API (unchanged)
-- `/static/*` - Static assets (CSS, JS, images)
 
 ## Development
 
@@ -147,23 +151,61 @@ The web management interface is built with:
 The web management interface is automatically included when building the registry:
 
 ```bash
+# Build frontend first
+cd frontend
+npm install
+npm run build
+
+# Then build registry
+cd ..
 make binaries
+```
+
+### Frontend Development
+
+The frontend is a React application located in the `frontend/` directory.
+
+**Setup:**
+```bash
+cd frontend
+npm install
+```
+
+**Development mode (with hot reload):**
+```bash
+npm run dev
+# Access at http://localhost:5173 (proxies API to localhost:5000)
+```
+
+**Build for production:**
+```bash
+npm run build
+# Outputs to ../registry/api/web/static
+```
+
+The production build is automatically embedded into the registry binary.
+
+**Frontend Structure:**
+```
+frontend/
+├── src/
+│   ├── App.jsx              # Main app with routing
+│   ├── components/
+│   │   ├── Dashboard.jsx    # Dashboard page
+│   │   ├── Repositories.jsx # Repository list
+│   │   └── Settings.jsx     # Configuration viewer
+│   ├── index.css            # Global styles
+│   └── main.jsx             # Entry point
+├── package.json
+└── vite.config.js           # Vite build configuration
 ```
 
 ### Adding New API Endpoints
 
 1. Add handler function in `registry/api/web/web.go`
 2. Register route in `RegisterRoutes` method
-3. Update this documentation
-
-### Frontend Development
-
-The frontend is currently a simple HTML/JavaScript application located in:
-```
-registry/api/web/static/index.html
-```
-
-For more advanced features, this can be replaced with a React application.
+3. Update frontend to consume the new endpoint
+4. Update this documentation
 
 ## Security Considerations
 
