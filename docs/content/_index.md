@@ -35,19 +35,19 @@ Cloud infrastructure providers such as [AWS](https://aws.amazon.com/ecr/), [Azur
 
 If you're looking for other lightweight, self-hosted container registry solutions, consider:
 
-- **[Harbor](https://goharbor.io/)** - An open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Distribution by adding features like security, identity, and management. It's a CNCF graduated project.
+- **[Harbor](https://goharbor.io/)** - An open source trusted cloud native registry project that stores, signs, and scans content. Harbor is built on top of Distribution and adds enterprise features like security scanning, role-based access control, and image replication. It's a CNCF graduated project suitable for organizations needing advanced security and management features.
 
-- **[Zot](https://zotregistry.io/)** - A production-ready, vendor-neutral OCI image registry with minimal dependencies, written in Go. Designed to be simple, secure, and standards-compliant.
+- **[Zot](https://zotregistry.io/)** - A production-ready, vendor-neutral OCI image registry with minimal dependencies, written in Go. Designed to be simple, secure, and standards-compliant with low resource requirements (can run with <100MB memory), making it ideal for edge, IoT, and resource-constrained environments.
 
-- **[Gitea Container Registry](https://docs.gitea.io/en-us/packages/container/)** - A lightweight package registry integrated into Gitea, supporting container images alongside other package formats. Ideal for small teams already using Gitea.
+- **[Gitea Container Registry](https://docs.gitea.io/en-us/packages/container/)** - A lightweight package registry integrated into Gitea, supporting container images alongside other package formats. Ideal for small teams already using Gitea who want unified source code and container management.
 
-- **[Nexus Repository](https://www.sonatype.com/products/nexus-repository)** - A universal artifact repository manager that supports Docker registries among many other formats. Available in both OSS and Pro versions.
+- **[Nexus Repository](https://www.sonatype.com/products/nexus-repository)** - A universal artifact repository manager that supports Docker registries among many other formats. Available in both OSS and Pro versions. Better suited for organizations with diverse artifact types beyond containers.
 
-- **[JFrog Artifactory](https://jfrog.com/artifactory/)** - A comprehensive universal artifact repository that includes Docker registry capabilities, available in both self-hosted and cloud versions.
+- **[JFrog Artifactory](https://jfrog.com/artifactory/)** - A comprehensive universal artifact repository that includes Docker registry capabilities, available in both self-hosted and cloud versions. Enterprise-focused with extensive features but higher resource requirements.
 
-- **[Dragonfly](https://d7y.io/)** - A P2P-based image and file distribution system, designed to improve the efficiency and speed of large-scale container image distribution. Focuses on distribution rather than storage.
+- **[Dragonfly](https://d7y.io/)** - A CNCF-hosted P2P-based image and file distribution system that accelerates content delivery from existing registries (including Distribution). It works as a distribution layer rather than a replacement registry, improving efficiency for large-scale deployments.
 
-Each alternative has different features, resource requirements, and use cases. Harbor and Zot are good choices for lightweight self-hosted solutions with security features, while Nexus and Artifactory are better suited for organizations needing multi-format artifact management.
+When choosing an alternative, consider: Distribution and Zot are the most lightweight (suitable for environments with limited resources); Harbor adds security features on top of Distribution; Gitea integrates well with source code management; while Nexus and Artifactory are better for organizations needing multi-format artifact management but require more resources.
 
 ## Compatibility
 
