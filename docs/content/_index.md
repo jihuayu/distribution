@@ -47,7 +47,8 @@ If you're looking for other lightweight, self-hosted container registry solution
 
 - **[Dragonfly](https://d7y.io/)** - A CNCF-hosted P2P-based image and file distribution system that accelerates content delivery from existing registries (including Distribution). It works as a distribution layer rather than a replacement registry, improving efficiency for large-scale deployments.
 
-**When choosing an alternative, consider:**
+#### When choosing an alternative, consider:
+
 - **Most lightweight**: Distribution and Zot are suitable for environments with limited resources
 - **Security-focused**: Harbor adds enterprise security features on top of Distribution
 - **Integrated workflow**: Gitea is ideal if you need unified source code and container management
