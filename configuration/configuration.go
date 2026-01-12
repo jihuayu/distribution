@@ -66,6 +66,9 @@ type Configuration struct {
 
 	// Policy configures registry policy options.
 	Policy Policy `yaml:"policy,omitempty"`
+
+	// WebManagement configures the web-based management interface.
+	WebManagement WebManagement `yaml:"webmanagement,omitempty"`
 }
 
 // Policy defines configuration options for managing registry policies.
@@ -81,6 +84,51 @@ type Repository struct {
 	// If this field is non-empty, the registry enforces that all uploaded
 	// content belongs to one of the specified classes.
 	Classes []string `yaml:"classes"`
+}
+
+// WebManagement defines configuration for the web-based management interface.
+type WebManagement struct {
+	// Enabled determines whether the web management interface is enabled.
+	Enabled bool `yaml:"enabled,omitempty"`
+
+	// OAuth configures GitHub OAuth authentication for the web interface.
+	OAuth OAuth `yaml:"oauth,omitempty"`
+
+	// CDN configures Content Delivery Network support.
+	CDN CDN `yaml:"cdn,omitempty"`
+}
+
+// OAuth configures GitHub OAuth authentication.
+type OAuth struct {
+	// GitHub configures GitHub OAuth provider.
+	GitHub GitHubOAuth `yaml:"github,omitempty"`
+}
+
+// GitHubOAuth configures GitHub OAuth authentication.
+type GitHubOAuth struct {
+	// ClientID is the GitHub OAuth client ID.
+	ClientID string `yaml:"clientid,omitempty"`
+
+	// ClientSecret is the GitHub OAuth client secret.
+	ClientSecret string `yaml:"clientsecret,omitempty"`
+
+	// RedirectURL is the OAuth callback URL.
+	RedirectURL string `yaml:"redirecturl,omitempty"`
+}
+
+// CDN configures Content Delivery Network support.
+type CDN struct {
+	// Enabled determines whether CDN support is enabled.
+	Enabled bool `yaml:"enabled,omitempty"`
+
+	// Provider specifies the CDN provider (cloudfront, cloudflare, custom).
+	Provider string `yaml:"provider,omitempty"`
+
+	// BaseURL is the base URL for the CDN.
+	BaseURL string `yaml:"baseurl,omitempty"`
+
+	// Headers are custom headers to add for CDN requests.
+	Headers map[string]string `yaml:"headers,omitempty"`
 }
 
 // Catalog provides configuration options for the /v2/_catalog endpoint.

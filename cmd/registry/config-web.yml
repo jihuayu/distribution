@@ -1,0 +1,48 @@
+version: 0.1
+log:
+  level: info
+  formatter: text
+  fields:
+    service: registry
+    environment: development
+
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+  cache:
+    blobdescriptor: inmemory
+
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+  debug:
+    addr: :5001
+    prometheus:
+      enabled: true
+      path: /metrics
+
+# Web Management Interface Configuration
+webmanagement:
+  enabled: true
+  
+  # GitHub OAuth Configuration
+  oauth:
+    github:
+      clientid: YOUR_GITHUB_CLIENT_ID
+      clientsecret: YOUR_GITHUB_CLIENT_SECRET
+      redirecturl: http://localhost:5000/api/v1/auth/callback
+  
+  # CDN Configuration (optional)
+  cdn:
+    enabled: false
+    provider: cloudfront  # cloudfront, cloudflare, or custom
+    baseurl: https://cdn.example.com
+    headers:
+      Cache-Control: "public, max-age=31536000"
+
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
