@@ -37,17 +37,15 @@ If you're looking for other lightweight, self-hosted container registry solution
 
 - **[Harbor](https://goharbor.io/)** - An open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Distribution by adding features like security, identity, and management. It's a CNCF graduated project.
 
-- **[Gitea Container Registry](https://docs.gitea.io/en-us/packages/container/)** - A lightweight package registry integrated into Gitea, supporting container images alongside other package formats. Ideal for small teams already using Gitea.
+- **[Zot](https://zotregistry.io/)** - A production-ready, vendor-neutral OCI image registry with minimal dependencies, written in Go. Designed to be simple, secure, and standards-compliant.
 
-- **[GitHub Container Registry (ghcr.io)](https://docs.github.com/en/packages/working-with-the-github-container-registry)** - While part of GitHub's hosted services, it provides generous free tiers and tight integration with GitHub Actions and repositories.
+- **[Gitea Container Registry](https://docs.gitea.io/en-us/packages/container/)** - A lightweight package registry integrated into Gitea, supporting container images alongside other package formats. Ideal for small teams already using Gitea.
 
 - **[Nexus Repository](https://www.sonatype.com/products/nexus-repository)** - A universal artifact repository manager that supports Docker registries among many other formats. Available in both OSS and Pro versions.
 
 - **[JFrog Artifactory](https://jfrog.com/artifactory/)** - A comprehensive universal artifact repository that includes Docker registry capabilities, available in both self-hosted and cloud versions.
 
 - **[Dragonfly](https://d7y.io/)** - A P2P-based image and file distribution system, designed to improve the efficiency and speed of large-scale container image distribution. Focuses on distribution rather than storage.
-
-- **[Zot](https://zotregistry.io/)** - A production-ready, vendor-neutral OCI image registry with minimal dependencies, written in Go. Designed to be simple, secure, and standards-compliant.
 
 Each alternative has different features, resource requirements, and use cases. Harbor and Zot are good choices for lightweight self-hosted solutions with security features, while Nexus and Artifactory are better suited for organizations needing multi-format artifact management.
 
