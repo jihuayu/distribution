@@ -37,7 +37,7 @@ If you're looking for other lightweight, self-hosted container registry solution
 
 - **[Harbor](https://goharbor.io/)** - An open source trusted cloud native registry project that stores, signs, and scans content. Harbor is built on top of Distribution and adds enterprise features like security scanning, role-based access control, and image replication. It's a CNCF graduated project suitable for organizations needing advanced security and management features.
 
-- **[Zot](https://zotregistry.io/)** - A production-ready, vendor-neutral OCI image registry with minimal dependencies, written in Go. Designed to be simple, secure, and standards-compliant with low resource requirements (can run with <100MB memory), making it ideal for edge, IoT, and resource-constrained environments.
+- **[Zot](https://zotregistry.io/)** - A production-ready, vendor-neutral OCI image registry with minimal dependencies, written in Go. Designed to be simple, secure, and standards-compliant with low resource requirements (can run with <100MB memory), making it ideal for edge, IoT, and resource-constrained environments. Like Distribution, it's a lightweight registry, but Zot focuses on simplicity and includes built-in security features like image signing verification and access control.
 
 - **[Gitea Container Registry](https://docs.gitea.io/en-us/packages/container/)** - A lightweight package registry integrated into Gitea, supporting container images alongside other package formats. Ideal for small teams already using Gitea who want unified source code and container management.
 
@@ -47,7 +47,11 @@ If you're looking for other lightweight, self-hosted container registry solution
 
 - **[Dragonfly](https://d7y.io/)** - A CNCF-hosted P2P-based image and file distribution system that accelerates content delivery from existing registries (including Distribution). It works as a distribution layer rather than a replacement registry, improving efficiency for large-scale deployments.
 
-When choosing an alternative, consider: Distribution and Zot are the most lightweight (suitable for environments with limited resources); Harbor adds security features on top of Distribution; Gitea integrates well with source code management; while Nexus and Artifactory are better for organizations needing multi-format artifact management but require more resources.
+**When choosing an alternative, consider:**
+- **Most lightweight**: Distribution and Zot are suitable for environments with limited resources
+- **Security-focused**: Harbor adds enterprise security features on top of Distribution
+- **Integrated workflow**: Gitea is ideal if you need unified source code and container management
+- **Multi-format needs**: Nexus and Artifactory are better for organizations managing diverse artifact types, but require more resources
 
 ## Compatibility
 
