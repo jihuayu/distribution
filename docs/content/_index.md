@@ -35,7 +35,7 @@ Cloud infrastructure providers such as [AWS](https://aws.amazon.com/ecr/), [Azur
 
 If you're looking for other lightweight, self-hosted container registry solutions, consider:
 
-- **[Harbor](https://goharbor.io/)** - An open source trusted cloud native registry project that stores, signs, and scans content. Harbor is built on top of Distribution and adds enterprise features like security scanning, role-based access control, and image replication. It's a CNCF graduated project suitable for organizations needing advanced security and management features.
+- **[Harbor](https://goharbor.io/)** - An open-source trusted cloud native registry project that stores, signs, and scans content. Harbor is built on top of Distribution and adds enterprise features like security scanning, role-based access control, and image replication. It's a CNCF graduated project suitable for organizations needing advanced security and management features.
 
 - **[Zot](https://zotregistry.io/)** - A production-ready, vendor-neutral OCI image registry with minimal dependencies, written in Go. Designed to be simple, secure, and standards-compliant with low resource requirements (can run with <100MB memory), making it ideal for edge, IoT, and resource-constrained environments. Like Distribution, it's a lightweight registry, but Zot focuses on simplicity and includes built-in security features like image signing verification and access control.
 
