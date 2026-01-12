@@ -28,6 +28,7 @@ import (
 	"github.com/distribution/distribution/v3/notifications"
 	"github.com/distribution/distribution/v3/registry/api/errcode"
 	v2 "github.com/distribution/distribution/v3/registry/api/v2"
+	"github.com/distribution/distribution/v3/registry/api/web"
 	"github.com/distribution/distribution/v3/registry/auth"
 	registrymiddleware "github.com/distribution/distribution/v3/registry/middleware/registry"
 	repositorymiddleware "github.com/distribution/distribution/v3/registry/middleware/repository"
@@ -359,6 +360,14 @@ func NewApp(ctx context.Context, config *configuration.Configuration) *App {
 	app.repoRemover, ok = app.registry.(distribution.RepositoryRemover)
 	if !ok {
 		dcontext.GetLogger(app).Warnf("Registry does not implement RepositoryRemover. Will not be able to delete repos and tags")
+	}
+
+	// Configure web management interface if enabled
+	if config.WebManagement.Enabled {
+		dcontext.GetLogger(app).Info("Configuring web management interface")
+		webHandler := web.NewHandler(config, app.registry)
+		webHandler.RegisterRoutes(app.router)
+		dcontext.GetLogger(app).Info("Web management interface configured successfully")
 	}
 
 	return app
