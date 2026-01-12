@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registry Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; margin-bottom: 10px; }
+        .subtitle { color: #666; }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .card h2 { color: #667eea; margin-bottom: 15px; }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .info-item {
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 5px;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .btn:hover { background: #5568d3; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="loading">Loading Registry Management...</div>
+    </div>
+    
+    <script>
+        class RegistryApp {
+            constructor() {
+                this.status = null;
+                this.repos = null;
+                this.init();
+            }
+            
+            async init() {
+                await this.loadData();
+                this.render();
+            }
+            
+            async loadData() {
+                try {
+                    const statusResp = await fetch('/api/v1/status');
+                    if (statusResp.ok) {
+                        this.status = await statusResp.json();
+                    }
+                    
+                    const reposResp = await fetch('/api/v1/repositories');
+                    if (reposResp.ok) {
+                        this.repos = await reposResp.json();
+                    }
+                } catch (e) {
+                    console.error('Failed to load data:', e);
+                }
+            }
+            
+            render() {
+                const app = document.getElementById('app');
+                app.innerHTML = this.renderDashboard();
+            }
+            
+            renderDashboard() {
+                return `
+                    <div class="container">
+                        <div class="header">
+                            <h1>🐳 Registry Management</h1>
+                            <p class="subtitle">Modern Container Registry Dashboard</p>
+                        </div>
+                        
+                        ${this.status ? `
+                        <div class="card">
+                            <h2>System Status</h2>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Status</div>
+                                    <div class="info-value">${this.status.status}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Version</div>
+                                    <div class="info-value">${this.status.version}</div>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${this.repos ? `
+                        <div class="card">
+                            <h2>Repositories</h2>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Total Repositories</div>
+                                    <div class="info-value">${this.repos.count || 0}</div>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="card">
+                            <h2>Quick Actions</h2>
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button class="btn" onclick="app.loadData().then(() => app.render())">Refresh Data</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        const app = new RegistryApp();
+    </script>
+</body>
+</html>

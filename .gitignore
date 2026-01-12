@@ -43,3 +43,7 @@ tests/miniodata
 **/.hugo_build.lock
 docs/resources
 docs/public
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
